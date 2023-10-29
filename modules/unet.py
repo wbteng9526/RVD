@@ -109,3 +109,29 @@ class Unet(nn.Module):
 
         x, h = self.encode(x, t, context)
         return self.decode(x, h, t)
+
+
+class ControlledUet(Unet):
+    def decode(self, x, h, t, control=None):
+        if control is not None:
+            h += control.pop()
+
+        x = self.mid_attn(x)
+        x = self.mid_block2(x, t)
+
+        for backbone, backbone2, attn, upsample in self.ups:
+            if control is None:
+                x = torch.cat((x, h.pop()), dim=1)
+            else:
+                x = torch.cat((x, h.pop(), control.pop()), dim=1)
+            x = backbone(x, t)
+            x = backbone2(x, t)
+            x = attn(x)
+            x = upsample(x)
+        return self.final_conv(x)
+    
+    def forward(self, x, time=None, context=None, control=None):
+        t = self.time_mlp(time) if exists(self.time_mlp) else None
+
+        x, h = self.encode(x, t, context)
+        return self.decode(x, h, t, control)
