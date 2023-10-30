@@ -30,10 +30,26 @@ backbone = "resnet"
 aux_loss = False
 additional_note = ""
 
+# controlnet config
+use_checkpoint = True
+image_size = 32 # unused
+in_channels = 4
+hint_channels = 3
+model_channels = 320
+attention_resolutions = [ 4, 2, 1 ]
+num_res_blocks = 2
+channel_mult = [ 1, 2, 4, 4 ]
+num_head_channels = 64 # need to fix for flash-attn
+use_spatial_transformer = True
+use_linear_in_transformer = True
+transformer_depth = 1
+context_dim = 1024
+legacy = False
+
 # data config
 data_config = {
-    "dataset_name": "city",
-    "data_path": "*",
+    "dataset_name": "carla",
+    "data_path": "/home/wteng/data/sequence/",
     "sequence_length": 8,
     "img_size": 256,
     "img_channel": 3,

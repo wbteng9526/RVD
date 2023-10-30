@@ -59,7 +59,8 @@ class ControlGaussianDiffusion(GaussianDiffusion):
     def step_forward(self, x, context, cond, t, trans_shift_scale):
         return self.p_losses(x, context, cond, t, trans_shift_scale)
     
-    def forward(self, video, control_video):
+    def forward(self, batch):
+        video, control_video = batch['jpg'], batch['hint']
         device = video.device
         T, B, C, H, W = video.shape
         t = torch.randint(0, self.num_timesteps, (B,), device=device).long()
