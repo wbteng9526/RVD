@@ -12,7 +12,7 @@ ema_step = 5
 ema_start_step = 2000
 
 # load
-load_model = True
+load_model = False
 load_step = False
 
 # diffusion config
@@ -33,7 +33,7 @@ additional_note = ""
 # controlnet config
 use_checkpoint = True
 image_size = 32 # unused
-in_channels = 4
+in_channels = 3
 hint_channels = 3
 model_channels = 320
 attention_resolutions = [ 4, 2, 1 ]
@@ -49,7 +49,7 @@ legacy = False
 # data config
 data_config = {
     "dataset_name": "carla",
-    "data_path": "/home/wteng/data/sequence/",
+    "data_path": "/home/wteng/data/carla/sequence/",
     "sequence_length": 8,
     "img_size": 256,
     "img_channel": 3,
@@ -72,5 +72,5 @@ else:
 
 model_name = f"{backbone}-{optimizer}-{pred_mode}-{loss_type}-{data_config['dataset_name']}-d{embed_dim}-t{iteration_step}-{transform_mode}-al{aux_loss}{additional_note}"
 
-result_root = "*"
-tensorboard_root = "*"
+result_root = "res"
+tensorboard_root = "vis"

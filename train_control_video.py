@@ -6,7 +6,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 from modules.denoising_diffusion import GaussianDiffusion
 from modules.control_denoising_diffusion import ControlGaussianDiffusion, ControlNet
-from modules.unet import Unet, ControlledUet
+from modules.unet import Unet, ControlledUnet
 from modules.trainer import Trainer
 from modules.temporal_models import HistoryNet, CondNet
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -59,29 +59,28 @@ def main(rank, world_size):
         else None
     )
 
-    controlnet_model = ControlNet(
-        use_checkpoint=config.use_checkpoint,
-        image_size=config.image_size,
-        in_channels=config.in_channels,
-        hint_channels=config.hint_channels,
-        model_channels=config.model_channels,
-        attention_resolutions=config.attention_resolutions,
-        num_res_blocks=config.num_res_blocks,
-        channel_mult=config.channel_mult,
-        num_head_channels=config.num_head_channels,
-        use_spatial_transformer=config.use_spatial_transformer,
-        use_linear_in_transformer=config.use_linear_in_transformer,
-        transformer_depth=config.transformer_depth,
-        context_dim=config.context_dim,
-        legacy=config.legacy
-    )
+    # controlnet_model = ControlNet(
+    #     use_checkpoint=config.use_checkpoint,
+    #     image_size=config.image_size,
+    #     in_channels=config.in_channels,
+    #     hint_channels=config.hint_channels,
+    #     model_channels=config.model_channels,
+    #     attention_resolutions=config.attention_resolutions,
+    #     num_res_blocks=config.num_res_blocks,
+    #     channel_mult=config.channel_mult,
+    #     num_head_channels=config.num_head_channels,
+    #     use_spatial_transformer=config.use_spatial_transformer,
+    #     use_linear_in_transformer=config.use_linear_in_transformer,
+    #     transformer_depth=config.transformer_depth,
+    #     context_dim=config.context_dim,
+    #     legacy=config.legacy
+    # )
 
 
-    diffusion = ControlGaussianDiffusion(
+    diffusion = GaussianDiffusion(
         denoise_fn=denoise_model,
         history_fn=context_model,
         transform_fn=transform_model,
-        control_fn=controlnet_model,
         pred_mode=config.pred_mode,
         clip_noise=config.clip_noise,
         timesteps=config.iteration_step,
@@ -120,6 +119,8 @@ def main(rank, world_size):
 
 
 if __name__ == "__main__":
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12355'
     mp.spawn(main, args=(args.ndevice,), nprocs=args.ndevice, join=True)
     dist.barrier()
     dist.destroy_process_group()

@@ -14,3 +14,4 @@ from .audi import AUDI
 from .climate import ClimateData
 from .city import CITY
 from .simu import Simulation
+from .carla import CARLA

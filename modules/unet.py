@@ -111,7 +111,7 @@ class Unet(nn.Module):
         return self.decode(x, h, t)
 
 
-class ControlledUet(Unet):
+class ControlledUnet(Unet):
     def decode(self, x, h, t, control=None):
         if control is not None:
             h += control.pop()

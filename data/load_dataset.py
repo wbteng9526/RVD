@@ -246,7 +246,36 @@ def load_dataset(data_config):
         val = Simulation(
             os.path.join(data_path, "simulation", "vortex.npy"), data_config["sequence_length"], False, data_config["img_size"]
         )
+    elif dataset_name == "carla":
+        from .datasets import CARLA
+
+        transforms = [
+            trans.ResizeList(data_config["img_size"]),
+            trans.ImageToTensor(),
+            trans.ConcatSequence()
+        ]
+        transforms = trans.Compose(transforms)
+        train = CARLA(
+            data_path, data_config["sequence_length"], True, transforms
+        )
+        val = CARLA(
+            data_path, data_config["sequence_length"], False, transforms
+        )
     else:
         raise Exception("Dataset name not found.")
 
     return train, val
+
+
+# if __name__ == "__main__":
+#     data_config = {
+#         "dataset_name": "carla",
+#         "data_path": "/home/wteng/data/carla/sequence/",
+#         "sequence_length": 8,
+#         "img_size": 256,
+#         "img_channel": 3,
+#         "add_noise": False,
+#         "img_hz_flip": False,
+#     }
+#     train, val = load_dataset(data_config)
+#     print(train.__getitem__(0).shape)

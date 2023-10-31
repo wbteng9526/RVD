@@ -227,7 +227,8 @@ class GaussianDiffusion(nn.Module):
         trans_shift_scale = self.transform_fn(x) if exists(self.transform_fn) else None
         return context, trans_shift_scale
 
-    def forward(self, video):
+    def forward(self, batch):
+        control, video = batch[:,:,:3], batch[:,:,3:]
         device = video.device
         T, B, C, H, W = video.shape
         t = torch.randint(0, self.num_timesteps, (B,), device=device).long()
@@ -243,7 +244,7 @@ class GaussianDiffusion(nn.Module):
                 L = self.step_forward(video[i], context, t, trans_shift_scale)
                 loss += L
             if i < video.shape[0] - 1:
-                context, trans_shift_scale = self.scan_context(video[i])
+                context, trans_shift_scale = self.scan_context(control[i])
 
         if exists(self.transform_fn):
             self.otherlogs["predict"] = torch.stack(self.otherlogs["predict"], 0)

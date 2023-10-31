@@ -332,3 +332,11 @@ class CentercropList(object):
 
     def __call__(self, inputs):
         return [self.crop(input) for input in inputs]
+
+
+class ResizeList(object):
+    def __init__(self, img_size):
+        self.resize = torch_transforms.Resize(img_size)
+    
+    def __call__(self, inputs):
+        return [self.resize(input) for input in inputs]

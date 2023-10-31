@@ -18,15 +18,16 @@ class CARLA(Dataset):
         else:
             self.path = os.path.join(path, "testing")
             self.seq_list = sorted(os.listdir(self.path))
+        self.add_noise = add_noise
         self.num_of_frame = num_of_frame
         self.seq_list = sorted(self.seq_list)
 
     def __getitem__(self, ind):
         # load the images from the ind directory to get list of PIL images
-        seq = self.seq_list[idx]
+        seq = self.seq_list[ind]
 
         control_frame_dir = os.path.join(self.path, seq, "source", "image")
-        target_frame_dir = os.path.join(self.path, seq, "target", "image"))
+        target_frame_dir = os.path.join(self.path, seq, "target", "image")
 
         control_frame_list = sorted(os.listdir(control_frame_dir))
         target_frame_list = sorted(os.listdir(target_frame_dir))
@@ -49,7 +50,7 @@ class CARLA(Dataset):
         if self.add_noise:
             target_imgs = target_imgs + (torch.rand_like(target_imgs) - 0.5) / 256.0
 
-        return dict(jpg=control_imgs, hint=target_imgs)
+        return torch.cat([control_imgs, target_imgs], dim=1)
 
     def __len__(self):
         # total number of videos

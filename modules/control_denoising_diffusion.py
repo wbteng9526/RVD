@@ -14,8 +14,8 @@ from .network_components import (
     timestep_embedding
 )
 
-from .ldm.modules.attention import SpatialTransformer
-from .ldm.modules.diffusionmodules.openaimodel import TimestepEmbedSequential, ResBlock, Downsample, AttentionBlock
+from ldm.modules.attention import SpatialTransformer
+from ldm.modules.diffusionmodules.openaimodel import TimestepEmbedSequential, ResBlock, Downsample, AttentionBlock
 
 
 class ControlGaussianDiffusion(GaussianDiffusion):
@@ -35,7 +35,7 @@ class ControlGaussianDiffusion(GaussianDiffusion):
                 raise NotImplementedError
             
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
-        control = self.control_fn(x=x_noisy, hint=torch.cat(cond['c_concat'], 1), timestep=t, context=context)
+        control = self.control_fn(x=x_noisy, hint=torch.cat([cond], dim=1), timesteps=t, context=context)
         control = [c * scale for c, scale in zip(control, self.control_scales)]
         x_recon = self.denoise_fn(x_noisy, t, context=context, control=control)
 
@@ -60,7 +60,7 @@ class ControlGaussianDiffusion(GaussianDiffusion):
         return self.p_losses(x, context, cond, t, trans_shift_scale)
     
     def forward(self, batch):
-        video, control_video = batch['jpg'], batch['hint']
+        video, control_video = batch[:,:,:3], batch[:,:,3:]
         device = video.device
         T, B, C, H, W = video.shape
         t = torch.randint(0, self.num_timesteps, (B,), device=device).long()
@@ -405,6 +405,7 @@ class ControlNet(nn.Module):
         emb = self.time_embed(t_emb)
 
         guided_hint = self.input_hint_block(hint, emb, context)
+        print(context.size())
 
         outs = []
 
@@ -412,6 +413,7 @@ class ControlNet(nn.Module):
         for module, zero_conv in zip(self.input_blocks, self.zero_convs):
             if guided_hint is not None:
                 h = module(h, emb, context)
+                print(h.size())
                 h += guided_hint
                 guided_hint = None
             else:
